@@ -12,11 +12,6 @@ class Api::V0::BookSearchController < ApplicationController
 
     books = LibraryService.new.search_location(location)
 
-    render json: {
-      location: location,
-      current_weather: forecast[:current_weather],
-      total_results: books[:numFound],
-      books: books[:docs].take(quantity)
-    }
+    render json: BookSearchSerializer.new(location, forecast, books[:numFound], books[:docs].take(quantity)).to_json
   end
 end
