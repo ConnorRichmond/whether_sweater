@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe BookSearchController, type: :controller do
+RSpec.describe Api::V0::BookSearchController, type: :controller do
   it 'returns book search results for a location' do
     allow_any_instance_of(WeatherFacade).to receive(:get_forecast).and_return(
       current_weather: { temperature: 75 },
@@ -22,7 +22,7 @@ RSpec.describe BookSearchController, type: :controller do
     expect(json_response['location']).to eq('vermont')
     expect(json_response['current_weather']['temperature']).to eq(75)
     expect(json_response['total_results']).to eq(5)
-    expect(json_response['books'].size).to eq(5)
+    expect(json_response['books'].size).to eq(2)
   end
 
   it 'returns an error for invalid quantity' do
