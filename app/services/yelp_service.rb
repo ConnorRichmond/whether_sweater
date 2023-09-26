@@ -1,7 +1,9 @@
 class YelpService
   def conn
+    api_key = Rails.application.credentials.yelp[:key]
+  
     Faraday.new("https://api.yelp.com/v3/businesses/search") do |faraday|
-      faraday.headers['Authorization'] = "Bearer [:key]"
+      faraday.headers['Authorization'] = "Bearer #{api_key}"
     end
   end
 
