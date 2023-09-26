@@ -15,10 +15,4 @@ class YelpService
 
     JSON.parse(response.body, symbolize_names: true)
   end
-
-  private
-
-  def yelp_api_key
-    Rails.application.credentials.yelp[:key]
-  end
 end
