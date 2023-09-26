@@ -1,28 +1,34 @@
 require "rails_helper"
 
 RSpec.describe YelpService, :vcr do
-  it 'connects to the Yelp API' do
+  it "connects to the yelpAPI" do
     service = YelpService.new
 
     expect(service.conn).to be_a(Faraday::Connection)
   end
 
-  it 'returns a hash of business data' do
+  it 'returns a hash of business data for pueblo, co' do
     service = YelpService.new
 
-    response = service.search_businesses('new york, ny', 'italian')
+    response = service.search_businesses('pueblo, co', 'italian')
 
-    data = JSON.parse(response.body, symbolize_names: true)
+    expect(response).to be_an(Hash)
+    expect(response[:businesses]).to be_an(Array)
 
-    expect(data).to have_key(:businesses)
-    expect(data[:businesses]).to be_an(Array)
-
-    if data[:businesses].any?
-      expect(data[:businesses].first).to have_key(:name)
-      expect(data[:businesses].first).to have_key(:location)
-      expect(data[:businesses].first[:location]).to have_key(:address)
-      expect(data[:businesses].first).to have_key(:rating)
-      expect(data[:businesses].first).to have_key(:review_count)
+    if response[:businesses].any?
+      business = response[:businesses].first
+      expect(business).to have_key(:name)
+      expect(business).to have_key(:location)
+      expect(business[:location]).to have_key(:display_address)
+      expect(business[:location][:display_address]).to be_an(Array)
+      expect(business).to have_key(:rating)
+      expect(business).to have_key(:review_count)
     end
   end
 end
+
+
+
+
+
+
