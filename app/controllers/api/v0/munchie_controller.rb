@@ -3,27 +3,31 @@ class Api::V0::MunchieController < ApplicationController
     location = params[:destination]
     cuisine = params[:food]
 
-    # Initialize the YelpService
-    yelp_service = YelpService.new
+    coordinates = MapquestFacade.new.coordinates(location)
 
-    # Make the API request to Yelp
-    yelp_data = yelp_service.search_businesses(location, cuisine)
+    if coordinates.present?
+      lat = coordinates[:lat]
+      lng = coordinates[:lng]
+      weather_data = WeatherFacade.new.get_forecast(lat, lng)
+      yelp_data = YelpFacade.new.search_businesses(location, cuisine)
 
-    # Process the Yelp data and build the response
-    response_data = {
-      destination_city: location,
-      forecast: {
-        summary: 'Your summary here', # Replace with actual forecast data
-        temperature: 'Your temperature here' # Replace with actual forecast data
-      },
-      restaurant: {
-        name: yelp_data[:name], # Extract relevant data from Yelp response
-        address: yelp_data[:address], # Extract relevant data from Yelp response
-        rating: yelp_data[:rating], # Extract relevant data from Yelp response
-        reviews: yelp_data[:reviews] # Extract relevant data from Yelp response
+      response_data = {
+        destination_city: location,
+        forecast: {
+          summary: weather_data[:summary],
+          temperature: weather_data[:temperature]
+        },
+        restaurant: {
+          name: yelp_data[:name],      
+          address: yelp_data[:address],
+          rating: yelp_data[:rating],
+          reviews: yelp_data[:reviews]
+        }
       }
-    }
 
-    render json: MunchieSerializer.new(response_data).to_json
+      render json: MunchieSerializer.new(response_data).to_json
+    else
+      render json: { error: "Invalid location" }, status: :bad_request
+    end
   end
 end

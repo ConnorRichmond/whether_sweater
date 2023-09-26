@@ -1,6 +1,7 @@
 class MunchieSerializer
-  def initialize(data)
-    @data = data
+  def initialize(yelp_data, weather_data)
+    @yelp_data = yelp_data
+    @weather_data = weather_data
   end
 
   def to_json
@@ -9,16 +10,16 @@ class MunchieSerializer
         id: nil,
         type: "munchie",
         attributes: {
-          destination_city: @data[:destination_city],
+          destination_city: @yelp_data[:destination_city],
           forecast: {
-            summary: @data[:forecast][:summary],
-            temperature: @data[:forecast][:temperature]
+            summary: @weather_data[:summary],
+            temperature: @weather_data[:temperature]
           },
           restaurant: {
-            name: @data[:restaurant][:name],
-            address: @data[:restaurant][:address],
-            rating: @data[:restaurant][:rating],
-            reviews: @data[:restaurant][:reviews]
+            name: @yelp_data[:restaurant][:name],
+            address: @yelp_data[:restaurant][:address],
+            rating: @yelp_data[:restaurant][:rating],
+            reviews: @yelp_data[:restaurant][:reviews]
           }
         }
       }

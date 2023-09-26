@@ -1,29 +1,16 @@
-require 'rails_helper'
+require "rails_helper"
 
-RSpec.describe "Munchies API", type: :request do
-  describe "GET /api/v0/munchies" do
-    it "returns a JSON response with restaurant and forecast data", vcr: { cassette_name: 'munchies_api' } do
-      destination = 'pueblo, co'
-      cuisine = 'italian'
+RSpec.describe "Munchies API", :vcr do
+  it "returns a JSON response with restaurant and forecast data" do
+    get "/api/v0/munchie", params: { location: "pueblo,co", cuisine: "italian" }
 
-      get "/api/v0/munchies", params: { destination: destination, cuisine: cuisine }
+    expect(response).to be_successful
+    expect(response.status).to eq(200)
 
-      expect(response).to have_http_status(:success)
-      expect(response.content_type).to eq('application/json; charset=utf-8')
+    response_data = JSON.parse(response.body, symbolize_names: true)
 
-      json_response = JSON.parse(response.body)
-      expect(json_response).to have_key('data')
-
-      data = json_response['data']
-      expect(data).to have_key('id')
-      expect(data).to have_key('type')
-      expect(data['type']).to eq('munchie')
-      expect(data).to have_key('attributes')
-
-      attributes = data['attributes']
-      expect(attributes).to have_key('destination_city')
-      expect(attributes).to have_key('forecast')
-      expect(attributes).to have_key('restaurant')
-    end
+    expect(response_data).to have_key(:destination_city)
+    expect(response_data).to have_key(:forecast)
+    expect(response_data).to have_key(:restaurant)
   end
 end
