@@ -1,34 +1,73 @@
-require 'rails_helper'
+require "rails_helper"
 
-RSpec.describe Api::V0::BookSearchController, type: :controller do
-  describe 'GET #index', vcr: { cassette_name: 'weather' } do
-    it 'search results for a book and weather data' do
-      get :index, params: { location: 'Vermont', quantity: 2 }
-      json_response = JSON.parse(response.body)
+RSpec.describe "Book Search" do
+  it "books about city", :vcr do
+    get "/api/v0/book-search", params: {location: "vermont", quantity: 5}
 
-      # Debugging
-      puts JSON.pretty_generate(json_response)
+    expect(response).to be_successful
+    expect(response.status).to eq(200)
 
-      # Debugging
-      puts "Destination: #{json_response['data']['attributes']['destination']}"
+    results = JSON.parse(response.body, symbolize_names: true)
 
-      expect(json_response['data']['attributes']['destination']).to eq('Vermont')
-      expect(json_response['data']['attributes']['forecast']['summary']).not_to be_nil
-      expect(json_response['data']['attributes']['forecast']['temperature']).not_to be_nil
-      expect(json_response['data']['attributes']['total_books_found']).not_to be_nil
-      expect(json_response['data']['attributes']['books']).not_to be_nil
-      expect(json_response['data']['attributes']['books'].size).to eq(2)
-      expect(json_response['data']['attributes']['books'][0]['title']).not_to be_nil
-      expect(json_response['data']['attributes']['books'][1]['title']).not_to be_nil
+    expect(results).to have_key(:data)
+    expect(results[:data]).to be_a(Hash)
 
+    expect(results[:data]).to have_key(:id)
+    expect(results[:data][:id]).to eq(nil)
+
+    expect(results[:data]).to have_key(:type)
+    expect(results[:data][:type]).to eq("books")
+    
+    expect(results[:data]).to have_key(:attributes)
+    expect(results[:data][:attributes]).to be_a(Hash)
+
+    expect(results[:data][:attributes]).to have_key(:destination)
+    expect(results[:data][:attributes][:destination]).to eq("vermont")
+
+    expect(results[:data][:attributes]).to have_key(:forecast)
+    expect(results[:data][:attributes][:forecast]).to be_a(Hash)
+    expect(results[:data][:attributes][:forecast]).to have_key(:summary)
+    expect(results[:data][:attributes][:forecast][:summary]).to be_a(String)
+
+    expect(results[:data][:attributes][:forecast]).to have_key(:temperature)
+    expect(results[:data][:attributes][:forecast][:temperature]).to be_a(String)
+    expect(results[:data][:attributes][:forecast][:temperature]).to end_with("F")
+
+    expect(results[:data][:attributes]).to have_key(:total_books_found)
+    expect(results[:data][:attributes][:total_books_found]).to be_an(Integer)
+
+    expect(results[:data][:attributes]).to have_key(:books)
+    books = results[:data][:attributes][:books]
+
+    expect(books).to be_an(Array)
+    expect(books.count).to eq(5)
+
+    books.each do |book|
+      expect(book).to have_key(:title)
+      expect(book[:title]).to be_a(String)
+      expect(book).to have_key(:isbn)
+      if book[:isbn]
+        expect(book[:isbn]).to be_an(Array)
+        expect(book[:isbn]).to all be_a(String)
+      end
     end
+  end
 
-    it 'returns an error for invalid quantity' do
-      get :index, params: { location: 'Vermont', quantity: -1 }
-      json_response = JSON.parse(response.body)
+  it "error if city is blank" do
+    get "/api/v0/book-search", params: { quantity: 5 }
 
-      expect(response).to have_http_status(:bad_request)
-      expect(json_response['error']).to eq('Quantity must be a positive integer greater than 0')
-    end
+    expect(response.status).to eq(422)
+
+    results = JSON.parse(response.body, symbolize_names: true)
+    expect(results).to eq({message: "Location cannot be blank"})
+  end
+
+  it "error if quantity is blank" do
+    get "/api/v0/book-search", params: { location: "vermont" }
+
+    expect(response.status).to eq(422)
+
+    results = JSON.parse(response.body, symbolize_names: true)
+    expect(results).to eq({message: "Quantity must be a number greater than 0"})
   end
 end

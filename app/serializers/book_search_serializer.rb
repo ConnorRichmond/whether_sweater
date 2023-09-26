@@ -1,37 +1,27 @@
-class BookSearchSerializer
-  def initialize(location, forecast, total_books_found, books)
-    @location = location
-    @forecast = forecast
-    @total_books_found = total_books_found
-    @books = books
+class BookSearchSerializer 
+  def initialize(forecast, book_results)
+    @forecast = forecast[:current]
+    @book_results = book_results
   end
 
-  def to_json
-    {
+  def to_json 
+    { 
       data: {
         id: nil,
-        type: 'books',
+        type: "books",
         attributes: {
-          destination: @location,
+          destination: @book_results[:destination],
           forecast: {
-            summary: @forecast[:current_weather][:condition],
-            temperature: "#{@forecast[:current_weather][:temperature]} F"
+            summary: @forecast[:condition][:text],
+            temperature: "#{@forecast[:temp_f].round} F"
           },
-          total_books_found: @total_books_found,
-          books: format_books(@books)
+          total_books_found: @book_results[:total_books_found],
+          books: @book_results[:books].map do |book|
+            {isbn: book[:isbn],
+            title: book[:title]}
+          end
         }
       }
     }
-  end
-
-  private
-
-  def format_books(books)
-    books.map do |book|
-      {
-        isbn: book[:isbn],
-        title: book[:title]
-      }
-    end
   end
 end
