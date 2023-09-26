@@ -3,7 +3,7 @@ require 'rails_helper'
 RSpec.describe "Munchies API", type: :request do
   describe "GET /api/v0/munchies" do
     it "returns a JSON response with restaurant and forecast data", vcr: { cassette_name: 'munchies_api' } do
-      destination = 'pueblo, pO'
+      destination = 'pueblo, co'
       cuisine = 'italian'
 
       get "/api/v0/munchies", params: { destination: destination, cuisine: cuisine }
