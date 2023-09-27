@@ -1,5 +1,6 @@
 # This file is copied to spec/ when you run 'rails generate rspec:install'
 require 'spec_helper'
+require 'shoulda/matchers'
 
 require 'simplecov'
 SimpleCov.start
@@ -76,3 +77,11 @@ VCR.configure do |config|
   config.configure_rspec_metadata!
   config.default_cassette_options = { re_record_interval: 7.days, record: :new_episodes }
 end
+
+Shoulda::Matchers.configure do |config|
+  config.integrate do |with|
+    with.test_framework :rspec
+    with.library :rails
+  end
+end
+
